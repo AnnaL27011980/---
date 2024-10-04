@@ -1,0 +1,31 @@
+# Разделение данных на признаки и целевую переменную
+X_train = train.drop('class', axis=1)
+y_train = train['class']
+
+# Создание модели случайного леса
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+
+# Обучение модели
+model.fit(X_train, y_train)
+
+# Предсказания на обучающей выборке
+y_train_predictions = model.predict(X_train)
+
+print("Предсказания на обучающей выборке:", y_train_predictions)
+
+# Расчет метрик на обучающей выборке
+accuracy = accuracy_score(y_train, y_train_predictions)
+precision = precision_score(y_train, y_train_predictions)
+recall = recall_score(y_train, y_train_predictions)
+f1 = f1_score(y_train, y_train_predictions)
+
+print("Точность (Accuracy):", accuracy)
+print("Точность (Precision):", precision)
+print("Полнота (Recall):", recall)
+print("F1-мера:", f1)
+
+#Сделайте предсказание на тестовых данных
+y_pred = model.predict(X_test)
+y_pred.shape
+print(y_pred)
+
