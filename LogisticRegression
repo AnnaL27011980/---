@@ -1,0 +1,83 @@
+pip install -U scikit-learn
+train = train_1.copy()
+X_train=train.drop(['class'],axis=1)
+y_train=train['class']
+num_data = X_train.select_dtypes(include=np.number)
+cat_data = X_train.select_dtypes(exclude=np.number)
+y_train.value_counts()
+#Создаем объект класса логистическая регрессия
+log_reg_full = linear_model.LogisticRegression(random_state=42, max_iter=1000)
+#Обучаем модель, минизируя logloss
+log_reg_full.fit(X_train, y_train)
+#Делаем предсказание класса
+y_pred = log_reg_full.predict(X_train)
+#Создадим временную таблицу X
+X_temp = X_train.copy()
+#Добавим в эту таблицу результат предсказания
+X_temp['class'] = y_pred
+X_temp.tail()
+#Делаем предсказание моделью, обученной на всех признаках 
+y_train_pred = log_reg_full.predict(train.drop('class', axis=1))
+#Строим матрицы ошибок для каждой из моделей
+confusion_matrix = metrics.confusion_matrix(y_train, y_train_pred)
+#Визуализируем матрицы ошибок
+fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+#Строим тепловую карту для матрицы ошибок
+sns.heatmap(confusion_matrix, annot=True, fmt='', ax=axes[1], cmap='Blues')
+#Добавляем название графику и подписи осей абсцисс и ординат
+
+axes[1].set_xlabel('y prediction')
+axes[1].set_ylabel('y true');
+
+#Модель log_reg_full:
+#Рассчитываем accuracy
+print('Accuracy: {:.2f}'.format(metrics.accuracy_score(y_train, y_train_pred)))
+#Рассчитываем precision
+print('Precision: {:.2f}'.format(metrics.precision_score(y_train, y_train_pred)))
+#Рассчитываем recall
+print('Recall: {:.2f}'.format(metrics.recall_score(y_train, y_train_pred)))
+#Рассчитываем F1-меру
+print('F1 score: {:.2f}'.format(metrics.f1_score(y_train, y_train_pred)))
+
+#Считаем вероятности выявления заболевания 
+y_proba_pred = log_reg_full.predict_proba(train.drop('class', axis=1))[:, 1]
+#Для удобства завернём numpy-массив в pandas Series
+y_proba_pred = pd.Series(y_proba_pred)
+#Создадим списки, в которых будем хранить значения метрик 
+recall_scores = []
+precision_scores = []
+f1_scores = []
+#Сгенерируем набор вероятностных порогов в диапазоне от 0.1 до 1
+thresholds = np.arange(0.1, 1, 0.05)
+#В цикле будем перебирать сгенерированные пороги
+for threshold in thresholds:
+    #Пациентов, для которых вероятность выявления заболевания > threshold относим к классу 1
+    #В противном случае — к классу 0
+    y_pred = y_proba_pred.apply(lambda x: 1 if x>threshold else 0)
+    #Считаем метрики и добавляем их в списки
+    recall_scores.append(metrics.recall_score(y_train, y_train_pred))
+    precision_scores.append(metrics.precision_score(y_train, y_train_pred))
+    f1_scores.append(metrics.f1_score(y_train, y_train_pred))
+
+#Задаём оптимальный порог вероятностей
+threshold_opt = 0.45
+#Если вероятность выявления заболевания > 0.4, относим к классу 1
+#В противном случае — к классу 0
+y_pred_opt = y_proba_pred.apply(lambda x: 1 if x > threshold_opt else 0)
+#Считаем метрики
+print(metrics.classification_report(y_train, y_pred_opt))
+
+test_1 = pd.read_csv('test_1.csv')
+test_1
+test = test_1.copy()
+test.info()
+num_test = test.select_dtypes(include=np.number).drop(['ID'],axis=1)
+cat_test = test.select_dtypes(exclude=np.number)
+test.drop('ID', axis=1, inplace=True)
+X_test = test
+X_test.info()
+model = LogisticRegression()
+model.fit(X_train, y_train)  # Обучение модели
+predictions = model.predict(X_test)  # Предсказания
+print("Предсказания:", predictions)
