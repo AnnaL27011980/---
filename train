@@ -1,0 +1,52 @@
+train_1 = pd.read_csv('train_1.csv')
+train_1
+train_1.info()
+display(train_1.describe())
+train_1.drop('ID', axis=1, inplace=True)
+dupl_columns = list(train_1.columns)
+dupl_columns.remove
+
+train_1.duplicated(subset=dupl_columns)
+train_1_duplicates = train_1[mask]
+print(f'Число найденных дубликатов: {train_1_duplicates.shape[0]}')
+columns = ['serum_cholestoral', 'maximum_heart_rate_achieved', 'resting_blood_pressure']
+
+for i in columns:
+    plt.figure(figsize=(5, 2))
+    sns.boxplot(x=train_1[i])
+    plt.title(f'Boxplot of {i} before handling outliers')
+    plt.show()
+
+for i in columns:
+    plt.figure(figsize=(10, 4))
+    sns.boxplot(x=train_1[i])
+    plt.title(f'Boxplot of {i} after handling outliers')
+    plt.show()
+
+train_1.hist(figsize=(20,20))
+plt.show()
+
+plt.figure(figsize=(20, 40), dpi=100)
+
+for i, column in enumerate(train_1.select_dtypes(include=['number']), start=1):
+    plt.subplot(10, 2, i)
+    sns.histplot(data=train_1, x=column, hue='class', bins=50)
+    plt.tight_layout()
+
+train_1['class'].value_counts().plot(kind="bar", color=["salmon", "lightblue"])
+plt.show()
+
+plt.figure(figsize=(20, 40), dpi=100)
+
+for i, column in enumerate(train_1.select_dtypes(include=['number']).columns, start=1):
+    plt.subplot(10, 2, i)
+    sns.histplot(data=train_1, x=column, bins=20)
+
+    plt.tight_layout()
+
+# корреляционная матрица
+plt.figure(figsize=(14,12))
+corr_matrix = train_1.corr()
+sns.heatmap(corr_matrix, annot=True, cmap='coolwarm')
+plt.title('Correlation Matrix')
+plt.show()
